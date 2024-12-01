@@ -83,8 +83,10 @@ fn run_solution(args: &Args) -> Result<String, String> {
     let input_filepath = format!("inputs/{}", input_filename);
 
     // Read the input
-    let input = fs::read_to_string(&input_filepath)
-        .unwrap_or_else(|_| panic!("Failed to read input from file: {}", &input_filepath));
+    let input = fs::read_to_string(&input_filepath).or(Err(format!(
+        "Failed to read input from file: {}",
+        &input_filepath
+    )))?;
 
     // Run the solution and return the result
     Ok(solver(&input))
@@ -93,20 +95,20 @@ fn run_solution(args: &Args) -> Result<String, String> {
 fn _main() -> Result<String, String> {
     let args = parse_args()?;
     match run_solution(&args) {
-        Ok(result) => {
-            println!("{result}");
-            Ok(result)
-        }
-        Err(err_msg) => {
-            println!("{err_msg}");
-            Err(err_msg)
-        }
+        Ok(result) => Ok(result),
+        Err(err_msg) => Err(err_msg),
     }
 }
 
 fn main() {
     match _main() {
-        Ok(_) => process::exit(0),
-        Err(_) => process::exit(1),
+        Ok(result) => {
+            println!("{result}");
+            process::exit(0)
+        }
+        Err(err_msg) => {
+            println!("ERROR: {err_msg}");
+            process::exit(1)
+        }
     }
 }
