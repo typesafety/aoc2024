@@ -1,3 +1,4 @@
 /target
 
-inputs/
+inputs/*
+!inputs/README.md
