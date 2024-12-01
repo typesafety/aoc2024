@@ -68,7 +68,7 @@ fn parse_args() -> Result<Args, String> {
     })
 }
 
-fn run_solution(args: &Args) -> Result<String, String> {
+fn solve(args: &Args) -> Result<String, String> {
     // Pick the correct solver
     let solver: fn(&str) -> String = match (&args.day, &args.part) {
         (Day::D1, Part::One) => solutions::day01::solve_part1,
@@ -89,15 +89,12 @@ fn run_solution(args: &Args) -> Result<String, String> {
     )))?;
 
     // Run the solution and return the result
-    Ok(solver(&input))
+    Ok(solver(input.trim()))
 }
 
 fn _main() -> Result<String, String> {
     let args = parse_args()?;
-    match run_solution(&args) {
-        Ok(result) => Ok(result),
-        Err(err_msg) => Err(err_msg),
-    }
+    solve(&args)
 }
 
 fn main() {
