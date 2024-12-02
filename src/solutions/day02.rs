@@ -1,11 +1,13 @@
 pub fn solve_part1(input: &str) -> String {
     let reports = parse_input(input);
-    let safe = reports.into_iter().filter(|v| is_safe(v)).count();
+    let safe = reports.into_iter().filter(|v| is_safe(v, false)).count();
     format!("{safe}")
 }
 
-pub fn solve_part2(_input: &str) -> String {
-    unimplemented!()
+pub fn solve_part2(input: &str) -> String {
+    let reports = parse_input(input);
+    let safe = reports.into_iter().filter(|v| is_safe(v, true)).count();
+    format!("{safe}")
 }
 
 #[derive(Debug)]
@@ -14,7 +16,7 @@ enum Trend {
     Decreasing,
 }
 
-fn is_safe(report: &[u32]) -> bool {
+fn is_safe(report: &[u32], dampener_on: bool) -> bool {
     fn check(scrutinee: &u32, prev: &u32, trend: &Trend) -> bool {
         let trend_ok = match trend {
             Trend::Increasing => scrutinee > prev,
@@ -22,22 +24,51 @@ fn is_safe(report: &[u32]) -> bool {
         };
         let delta = scrutinee.abs_diff(*prev);
         let gap_ok = (1..=3).contains(&delta);
-        !(trend_ok && gap_ok)
+        trend_ok && gap_ok
     }
 
-    let trend = if report[0] > report[1] {
-        Trend::Decreasing
-    } else {
-        Trend::Increasing
-    };
-    let mut prev = &report[0];
-    for n in &report[1..] {
-        if check(n, prev, &trend) {
-            return false;
+    fn check_all(nums: &[u32], allow_retry: bool) -> bool {
+        fn calc_trend(x: &u32, y: &u32) -> Trend {
+            if x > y {
+                Trend::Decreasing
+            } else {
+                Trend::Increasing
+            }
         }
-        prev = n;
+
+        let trend = calc_trend(&nums[0], &nums[1]);
+        let mut prev = &nums[0];
+
+        for (ix, n) in nums.iter().enumerate() {
+            if ix == 0 {
+                continue;
+            }
+            match (check(n, prev, &trend), allow_retry) {
+                (true, _) => prev = n,
+                (false, true) => {
+                    let mut variants: Vec<Vec<u32>> = [
+                        [&nums[..ix - 1], &nums[ix..]].concat(),
+                        [&nums[..ix], &nums[ix + 1..]].concat(),
+                    ]
+                    .to_vec();
+
+                    if ix != 1 {
+                        variants.extend([[&nums[..1], &nums[2..]].concat(), nums[1..].to_vec()]);
+                    }
+
+                    return variants
+                        .into_iter()
+                        .any(|variant| check_all(&variant, false));
+                }
+                (false, false) => {
+                    return false;
+                }
+            }
+        }
+        true
     }
-    true
+
+    check_all(report, dampener_on)
 }
 
 fn parse_input(s: &str) -> Vec<Vec<u32>> {
