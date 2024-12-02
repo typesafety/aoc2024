@@ -24,12 +24,14 @@ struct CliArgs {
 #[derive(Debug)]
 enum Day {
     D1,
+    D2,
 }
 
 impl Day {
     fn padded(&self) -> &'static str {
         match self {
             Day::D1 => "01",
+            Day::D2 => "02",
         }
     }
 }
@@ -52,6 +54,7 @@ fn parse_args() -> Result<Args, String> {
 
     let day = match args.day {
         1 => Ok(Day::D1),
+        2 => Ok(Day::D2),
         n => Err(format!("Solution for day {n} is not yet implemented")),
     }?;
 
@@ -73,6 +76,8 @@ fn solve(args: &Args) -> Result<String, String> {
     let solver: fn(&str) -> String = match (&args.day, &args.part) {
         (Day::D1, Part::One) => solutions::day01::solve_part1,
         (Day::D1, Part::Two) => solutions::day01::solve_part2,
+        (Day::D2, Part::One) => solutions::day02::solve_part1,
+        (Day::D2, Part::Two) => solutions::day02::solve_part2,
     };
 
     // Build the filename for the correct input
