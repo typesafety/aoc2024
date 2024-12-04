@@ -10,6 +10,7 @@ Solutions are located in
 * [Day 1](https://github.com/typesafety/aoc2024/tree/main/src/solutions/day01.rs)
 * [Day 2](https://github.com/typesafety/aoc2024/tree/main/src/solutions/day02.rs)
 * [Day 3](https://github.com/typesafety/aoc2024/tree/main/src/solutions/day03.rs)
+* [Day 4](https://github.com/typesafety/aoc2024/tree/main/src/solutions/day04.rs)
 
 ## Options
 
