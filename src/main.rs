@@ -27,6 +27,7 @@ enum Day {
     D2,
     D3,
     D4,
+    D5,
 }
 
 impl Day {
@@ -36,6 +37,7 @@ impl Day {
             Day::D2 => "02",
             Day::D3 => "03",
             Day::D4 => "04",
+            Day::D5 => "05",
         }
     }
 }
@@ -61,6 +63,7 @@ fn parse_args() -> Result<Args, String> {
         2 => Ok(Day::D2),
         3 => Ok(Day::D3),
         4 => Ok(Day::D4),
+        5 => Ok(Day::D5),
         n => Err(format!("Solution for day {n} is not yet implemented")),
     }?;
 
@@ -88,6 +91,8 @@ fn solve(args: &Args) -> Result<String, String> {
         (Day::D3, Part::Two) => solutions::day03::solve_part2,
         (Day::D4, Part::One) => solutions::day04::solve_part1,
         (Day::D4, Part::Two) => solutions::day04::solve_part2,
+        (Day::D5, Part::One) => solutions::day05::solve_part1,
+        (Day::D5, Part::Two) => solutions::day05::solve_part2,
     };
 
     // Build the filename for the correct input
