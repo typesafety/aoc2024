@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 pub fn solve_part1(input: &str) -> String {
     let (start_point, map) = parse_map(input);
@@ -14,21 +14,95 @@ pub fn solve_part1(input: &str) -> String {
             None => break,
             Some(new_state) => {
                 if state.point != new_state.point {
-                    map.entry(new_state.point)
-                        .and_modify(|pos| pos.visited = true);
+                    map.entry(new_state.point).and_modify(|pos| {
+                        pos.prev_states.insert(new_state.clone());
+                    });
                 }
                 state = new_state;
             }
         }
     }
 
-    let num_visited = map.into_values().filter(|pos| pos.visited).count();
+    let num_visited = map
+        .into_values()
+        .filter(|pos| !pos.prev_states.is_empty())
+        .count();
 
     format!("{:#?}", num_visited)
 }
 
 pub fn solve_part2(input: &str) -> String {
-    format!("{}", input)
+    let (start_point, orig_map) = parse_map(input);
+
+    let mut map = orig_map.clone();
+    let mut state = GuardState {
+        point: start_point,
+        dir: Direction::Up,
+    };
+
+    loop {
+        match step(&state, &map) {
+            None => break,
+            Some(new_state) => {
+                if state.point != new_state.point {
+                    map.entry(new_state.point).and_modify(|pos| {
+                        pos.prev_states.insert(new_state.clone());
+                    });
+                }
+                state = new_state;
+            }
+        }
+    }
+
+    let potential_obstruction_points: Vec<Point> = map
+        .clone()
+        .into_iter()
+        .filter(|(_, pos)| !pos.prev_states.is_empty())
+        .map(|(point, _)| point)
+        .filter(|point| point != &start_point)
+        .collect();
+
+    let mut loops = 0;
+
+    for (ix, obs_point) in potential_obstruction_points.into_iter().enumerate() {
+        println!("({}) Trying with obstruction at: {:?}", ix, obs_point);
+        let mut map = orig_map.clone();
+        let mut state = GuardState {
+            point: start_point,
+            dir: Direction::Up,
+        };
+        map.insert(
+            obs_point,
+            Pos {
+                obstruction: true,
+                prev_states: HashSet::new(),
+            },
+        );
+
+        loop {
+            match step(&state, &map) {
+                None => {
+                    break;
+                }
+                Some(new_state) => {
+                    let new_pos = map.get(&new_state.point).unwrap();
+                    if new_pos.prev_states.contains(&new_state) {
+                        loops += 1;
+                        break;
+                    }
+
+                    if state.point != new_state.point {
+                        map.entry(new_state.point).and_modify(|pos| {
+                            pos.prev_states.insert(new_state.clone());
+                        });
+                    }
+                    state = new_state;
+                }
+            }
+        }
+    }
+
+    format!("{:?}", loops)
 }
 
 fn step(state: &GuardState, map: &Map) -> Option<GuardState> {
@@ -67,7 +141,7 @@ fn step(state: &GuardState, map: &Map) -> Option<GuardState> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 struct GuardState {
     point: Point,
     dir: Direction,
@@ -76,13 +150,13 @@ struct GuardState {
 type Point = (i32, i32);
 type Map = HashMap<Point, Pos>;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Pos {
     obstruction: bool,
-    visited: bool,
+    prev_states: HashSet<GuardState>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 enum Direction {
     Up,
     Down,
@@ -96,17 +170,20 @@ fn parse_map(input: &str) -> (Point, Map) {
 
     for (y, row) in input.split("\n").enumerate() {
         for (x, char) in row.chars().enumerate() {
-            let mut visited = false;
+            let mut prev_states = HashSet::new();
             let point = (x.try_into().unwrap(), y.try_into().unwrap());
 
             if char == '^' {
                 start = Some(point);
-                visited = true;
+                prev_states.insert(GuardState {
+                    point,
+                    dir: Direction::Up,
+                });
             };
 
             let pos = Pos {
                 obstruction: char == '#',
-                visited: visited,
+                prev_states,
             };
 
             map.insert(point, pos);
