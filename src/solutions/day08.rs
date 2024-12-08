@@ -71,11 +71,6 @@ struct Point {
     x: i32,
     y: i32,
 }
-impl Point {
-    fn pp(&self) -> String {
-        format!("({}, {})", self.x, self.y)
-    }
-}
 
 type Antennas = HashMap<char, HashSet<Point>>;
 

@@ -20,11 +20,11 @@ pub fn solve_part2(input: &str) -> String {
     format!("{result}")
 }
 
-fn possible_eq(eq: &Equation, check_possible: fn(&Vec<u64>, test: u64) -> bool) -> bool {
+fn possible_eq(eq: &Equation, check_possible: fn(&[u64], test: u64) -> bool) -> bool {
     check_possible(&eq.numbers, eq.test)
 }
 
-fn check_possible1(nums: &Vec<u64>, test: u64) -> bool {
+fn check_possible1(nums: &[u64], test: u64) -> bool {
     match nums.split_last().unwrap() {
         (last, []) => *last == test,
         (last, rest) => {
@@ -40,12 +40,12 @@ fn check_possible1(nums: &Vec<u64>, test: u64) -> bool {
 
             new_tests
                 .iter()
-                .any(|new_test| check_possible1(&rest.into(), *new_test))
+                .any(|new_test| check_possible1(rest, *new_test))
         }
     }
 }
 
-fn check_possible2(nums: &Vec<u64>, test: u64) -> bool {
+fn check_possible2(nums: &[u64], test: u64) -> bool {
     fn last_digit(n: u64) -> u64 {
         n.to_string()
             .chars()
@@ -82,7 +82,7 @@ fn check_possible2(nums: &Vec<u64>, test: u64) -> bool {
 
             new_tests
                 .iter()
-                .any(|test| check_possible2(&rest.into(), *test))
+                .any(|test| check_possible2(rest, *test))
         }
     }
 }
